@@ -1,0 +1,13 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: discovery-server
+
+eureka:
+  client:
+    register-with-eureka: false # No te registres a ti mismo
+    fetch-registry: false       # No busques otros servidores
+  server:
+    wait-time-in-ms-when-sync-empty: 0 # Arranca rápido en desarrollo
