@@ -3,10 +3,12 @@ package com.microservices.decoding.orderservice.service;
 import com.microservices.decoding.orderservice.client.InventoryClient;
 import com.microservices.decoding.orderservice.dto.OrderRequest;
 import com.microservices.decoding.orderservice.dto.OrderLineItemsDto;
+import com.microservices.decoding.orderservice.event.OrderPlacedEvent;
 import com.microservices.decoding.orderservice.model.Order;
 import com.microservices.decoding.orderservice.model.OrderLineItems;
 import com.microservices.decoding.orderservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final InventoryClient inventoryClient; // Inyección del cliente Feign
+    private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
 
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
@@ -40,7 +43,9 @@ public class OrderService {
 
         if (allProductsInStock) {
             orderRepository.save(order);
-            System.out.println("Pedido guardado exitosamente");
+
+            kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getOrderNumber()));
+            System.out.println("Pedido guardado y notificacion enviada para: " + order.getOrderNumber());
         } else {
             throw new IllegalArgumentException("El producto no está en stock, intente más tarde");
         }
