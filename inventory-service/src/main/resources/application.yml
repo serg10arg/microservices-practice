@@ -1,0 +1,21 @@
+server:
+  port: 8082 # Evitamos conflicto con Gateway (8080) y Eureka (8761)
+
+spring:
+  application:
+    name: inventory-service # ¡CRÍTICO! Este ID usa el Gateway para enrutar
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:inventory_db
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # Crea tablas al inicio, borra al apagar (dev)
+    show-sql: true # Para ver en consola qué queries hace
+    defer-datasource-initialization: true # Permite cargar datos de prueba al inicio
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
