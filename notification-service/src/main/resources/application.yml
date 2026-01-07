@@ -1,0 +1,20 @@
+server:
+  port: 8083 # Otro puerto libre
+
+spring:
+  application:
+    name: notification-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notificationId # Identificador del grupo de consumidores
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.type.mapping: event:com.microservices.decoding.orderservice.event.OrderPlacedEvent
+        spring.json.trusted.packages: "*" # Confiar en el paquete del productor
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
