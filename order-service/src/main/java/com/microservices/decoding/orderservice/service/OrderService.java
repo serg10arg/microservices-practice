@@ -7,6 +7,7 @@ import com.microservices.decoding.orderservice.event.OrderPlacedEvent;
 import com.microservices.decoding.orderservice.model.Order;
 import com.microservices.decoding.orderservice.model.OrderLineItems;
 import com.microservices.decoding.orderservice.repository.OrderRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class OrderService {
     private final InventoryClient inventoryClient; // Inyección del cliente Feign
     private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
 
+    @CircuitBreaker(name = "inventory", fallbackMethod = "fallbackPlaceOrder")
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
@@ -49,6 +51,22 @@ public class OrderService {
         } else {
             throw new IllegalArgumentException("El producto no está en stock, intente más tarde");
         }
+    }
+
+    /**
+     * MÉTODO FALLBACK
+     * Se ejecuta cuando el InventoryService está caído o el circuito está abierto.
+     * IMPORTANTE: Debe tener la misma firma (argumentos) que el método original,
+     * más un argumento extra para la Excepción.
+     */
+    public void fallbackPlaceOrder(OrderRequest orderRequest, Throwable runtimeException) {
+        // Opción A: Guardar el pedido en un estado "PENDIENTE_VERIFICACION"
+        // Opción B: Rechazar amablemente.
+
+        System.out.println("ATENCIÓN: Inventario no disponible. Ejecutando Fallback logic.");
+
+        // Para esta práctica, lanzaremos una excepción personalizada evitando el timeout
+        throw new RuntimeException("El servicio de inventario no está disponible en este momento. Intente más tarde. (Fallback activado)");
     }
 
     private OrderLineItems mapToEntity(OrderLineItemsDto itemDto) {

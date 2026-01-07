@@ -24,6 +24,19 @@ spring:
       properties:
         spring.json.type.mapping: event:com.microservices.decoding.orderservice.event.OrderPlacedEvent
 
+  # Configuración de Resilience4j
+  resilience4j:
+    circuitbreaker:
+      instances:
+        inventory: # Nombre de nuestra instancia de cortocircuito
+          registerHealthIndicator: true
+          eventConsumerBufferSize: 10
+          slidingWindowType: COUNT_BASED
+          slidingWindowSize: 5        # Mira las últimas 5 peticiones
+          failureRateThreshold: 50    # Si el 50% falla (2.5 peticiones), abre el circuito
+          waitDurationInOpenState: 5s # Espera 5 segundos antes de intentar cerrar el circuito de nuevo
+          permittedNumberOfCallsInHalfOpenState: 3
+          automaticTransitionFromOpenToHalfOpenEnabled: true
 
 eureka:
   client:
