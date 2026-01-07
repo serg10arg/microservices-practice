@@ -18,7 +18,7 @@ spring:
         - id: order-service
           uri: lb://order-service
           predicates:
-            - Path=/api/orders/** # Todo lo que empiece por esto va a Order
+            - Path=/api/order/** # Todo lo que empiece por esto va a Order
           filters:
             - name: RequestRateLimiter
               args:
@@ -36,3 +36,11 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0 # IMPORTANTE: En Prod se usa 0.1, en Dev usamos 1.0 para verlo todo
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans # La URL del contenedor Zipkin
